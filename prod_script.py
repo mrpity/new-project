@@ -7,7 +7,6 @@ import pexpect
 router_un = "root"
 router_pw = "1DFl1H45"
 
-test
 #enable debugging
 #import ipdb; ipdb.set_trace()
 
@@ -27,7 +26,7 @@ for x in range(150, 153):
               child.sendline(router_pw)
               child.expect('#')
               child.sendline('conf t')
-#              child.logfile = sys.stdout
+#              child.logfile = sys.stdout  #show the output inform on the terminal
               child.logfile = open('mylog.txt', 'a+')
               child.expect('\(config\)#')
               child.sendline('ip route 8.8.8.8 255.255.255.255 10.100.100.1')
@@ -37,4 +36,11 @@ for x in range(150, 153):
               child.sendline('wr mem')
               child.expect('[OK]')
               child.expect('#')
+#              child.interact()   #Give the control to user
               child.sendline('quit')
+
+
+#just Example
+#p = pexpect.spawn('/bin/ls')
+#p.expect (pexpect.EOF)
+#print p.before
