@@ -60,7 +60,7 @@ for line in f:
 #       print("Found nothing", line)
 for x in IParray:
     print x
-#print (IParray)
+print ("______________________________________________________________________________")
 
 
 """
@@ -74,8 +74,17 @@ listIP = []
 for name in domainlist:
     listIP.append(subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0])
 listIP = filter(lambda x: bool(x), listIP)
-#print listIP
+#Some nslookups results return 2 or more ip adresses, so we need to split it and add to newList separatey
+newList = []
 for x in listIP:
+    if x.split("\n"):
+         for y in x.split("\n"):
+             newList.append(y)
+    else:
+        newlist.append(x)
+newList = filter(lambda x: bool(x), newList)
+
+for x in newList:
     print x
 
 
