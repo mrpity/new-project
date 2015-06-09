@@ -58,41 +58,24 @@ for line in f:
     else:
             pass
 #       print("Found nothing", line)
-print (IParray)
+for x in IParray:
+    print x
+#print (IParray)
 
 
-#f = open('/var/www/html/javascriptCourse/MY_PEOJECT/new-project/mylog.txt')
-#IParray = []
-#patternIP = re.compile('(.*)\/(.*)')
-#for line in f:
-#    result = patternIP.match(line)
-#    if result:    
-#       print(result.group(0))
-#    else:
-#       print("Found nothing!")
+"""
+get ip adresses with help of nslookup
+"""
 
 
+domainlist = ['www.msftncsi.com', 'clients1.google.com', 'clients2.google.com', 'clients3.google.com', 'clients4.google.com', 'clients5.google.com','clients6.google.com', 'clients7.google.com','clients8.google.com', 'clients9.google.com', 'apple.com', 'itools.info', 'ibook.info', 'thinkdifferent.us', 'airport.us', 'appleiphonecheck.com']
 
-#   child.logfile_read = sys.stdout
-#f = open('mylog.txt', 'a+')
-#child.sendline('y')
-#child.logfile = open('mylog.txt', 'a+')
-
-#child.logfile_read = sys.stdout  #show the output inform on the terminal
-#child.expect('.*>')
-#child.logfile = open('mylog.txt', 'a+')
-#              child.interact()   #Give the control to user
-#child.sendline('logout')
-
-#print (child.logfile)
-
-#get AP name
-#patternAP = re.compile('^SNMPv2-SMI::enterprises\.14179\.2\.2\.1\.1\.3\.(\d*).*\:\s\"(.*)\"')
-#queryAP = subprocess.Popen(["snmpwalk", "-v2c", "-cpity-test", "10.1.19.10", "1.3.6.1.4.1.14179.2.2.1.1.3"], stdout=subprocess.PIPE)
+listIP = []
+for name in domainlist:
+    listIP.append(subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0])
+listIP = filter(lambda x: bool(x), listIP)
+#print listIP
+for x in listIP:
+    print x
 
 
-#APname = {}
-#for line in queryAP.stdout:
-#        result = patternAP.match(line)
-#        APname[result.group(1)] = result.group(2)
-#        print result.group(2)
