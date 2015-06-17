@@ -38,7 +38,7 @@ def WLC(router_user, router_pass, router_ip, acl):
     child.sendline('logout')
 
 #call func WLC
-WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
+#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
 #WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet5' )
 
 """
@@ -74,7 +74,7 @@ def nslookup(domainlist):
     listIP = []
     for name in domainlist:
         listIP.append(subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0])
-    listIP = filter(lambda x: bool(x), listIP)
+    listIP = filter(lambda x: bool(x), listIP)  #check '' in listIP and delete this element
 #Some nslookups results return 2 or more ip adresses, so we need to split it and add to newList separatey
     newList = []
     for x in listIP:
@@ -111,7 +111,38 @@ def matchOctets(newList, IParray):
         matches_arr.update({ip1: max(matches)})
     return matches_arr
 
-print(matchOctets(newList, IParray))
+#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
+#IParray = match()
+#newList = nslookup(domainlist)
+#print(matchOctets(newList, IParray))
+
+WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet5' )
+IParray = match()
+newList = nslookup(domainlist)
+result = matchOctets(newList, IParray)
+
+mailResult = []
+for x in result:
+   if result[x] == 1:
+#       print(x, "odno sovdadenie")
+       mailResult.append(x)
+   elif result[x] == 2:
+       print(x, "dva sovpadenia")
+print(mailResult)
+
+
+#SMTP настройка
+to = 'd@wi-fi-bar.com'
+message = '\n\r'.join(mailResult)
+subject = "ip-in-ACL"
+msg = 'To: %s\r\nContent-Type: text/html; charset="utf-8"\r\nSubject: %s\r\n' % (to, subject)
+msg += message
+server = smtplib.SMTP('z.wi-fi-bar.com:25')
+server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
+        
+
+
+
 #print matches_arr
 #WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
 #match()
