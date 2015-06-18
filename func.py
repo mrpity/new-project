@@ -1,19 +1,13 @@
 #coding: utf_8
 
 """ 
-This Script gets the list of nets that contains Flexconnect ACL inet3
+This Script gets the list of networks that contains Flexconnect ACL inet3,5. 
 """
-
 
 import sys
 import pexpect
 import  subprocess, os, sys, re, smtplib
 
-
-#router_user = "mr.pity"
-#router_pass = "Neistrebim1201"
-#router_ip = "10.1.19.10"
-#acl = 'inet3'
 
 def WLC(router_user, router_pass, router_ip, acl):
     """
@@ -37,13 +31,11 @@ def WLC(router_user, router_pass, router_ip, acl):
     child.expect('.*>')
     child.sendline('logout')
 
-#call func WLC
-#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
-#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet5' )
 
 """
 look the file through and with help of rv  find ip address of network
 """
+
 def match():
     f = open('/var/www/html/javascriptCourse/MY_PEOJECT/new-project/mylog.txt')
     IParray = []  # list of  nets in ACL
@@ -51,7 +43,6 @@ def match():
     for line in f:
         findIP = re.search(ipPattern,line)
         if findIP:
-#       print "Found match", findIP.group(1)
            if findIP.group(1) !=  "0.0.0.0":
                IParray.append(findIP.group(1))
            else:
@@ -65,10 +56,13 @@ def match():
 #    print ("______________________________________________________________________________")
     return IParray
 
-IParray = match()
-#list of domain name
 
+#list of domain name
 domainlist = ['www.msftncsi.com', 'clients1.google.com', 'clients2.google.com', 'clients3.google.com', 'clients4.google.com', 'clients5.google.com','clients6.google.com', 'clients7.google.com','clients8.google.com', 'clients9.google.com', 'apple.com', 'itools.info', 'ibook.info', 'thinkdifferent.us', 'airport.us', 'appleiphonecheck.com']
+
+"""
+get list of ip addresses with help of nslookup
+"""
 
 def nslookup(domainlist):
     listIP = []
@@ -84,19 +78,13 @@ def nslookup(domainlist):
         else:
             newlist.append(x)
     newList = filter(lambda x: bool(x), newList)
-
-#    for x in newList:
-#
-#       print x
     return newList 
-
-newList = nslookup(domainlist)
-#print(newList)
 
 
 """
 find matches - ip octets
 """
+
 def matchOctets(newList, IParray):
     matches_arr = dict()
     for ip1 in newList:
@@ -112,8 +100,10 @@ def matchOctets(newList, IParray):
     return matches_arr
 
 
+"""
+transfer ACL in Functions and send email
+"""
 
-# transfer ACL in Functions and send email
 listACL = ['inet5', 'inet3']
 
 for oneACL in listACL:
@@ -142,10 +132,3 @@ for oneACL in listACL:
     server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
         
 
-
-
-#print matches_arr
-#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
-#match()
-#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet5' )
-#match()
