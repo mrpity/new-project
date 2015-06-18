@@ -111,34 +111,35 @@ def matchOctets(newList, IParray):
         matches_arr.update({ip1: max(matches)})
     return matches_arr
 
-#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
-#IParray = match()
-#newList = nslookup(domainlist)
-#print(matchOctets(newList, IParray))
-
-WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet5' )
-IParray = match()
-newList = nslookup(domainlist)
-result = matchOctets(newList, IParray)
-
-mailResult = []
-for x in result:
-   if result[x] == 1:
-#       print(x, "odno sovdadenie")
-       mailResult.append(x)
-   elif result[x] == 2:
-       print(x, "dva sovpadenia")
-print(mailResult)
 
 
-#SMTP настройка
-to = 'd@wi-fi-bar.com'
-message = '\n\r'.join(mailResult)
-subject = "ip-in-ACL"
-msg = 'To: %s\r\nContent-Type: text/html; charset="utf-8"\r\nSubject: %s\r\n' % (to, subject)
-msg += message
-server = smtplib.SMTP('z.wi-fi-bar.com:25')
-server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
+# transfer ACL in Functions and send email
+listACL = ['inet5', 'inet3']
+
+for oneACL in listACL:
+    WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', oneACL )
+    IParray = match()
+    newList = nslookup(domainlist)
+    result = matchOctets(newList, IParray)
+
+    mailResult = []
+    for x in result:
+       if result[x] == 1:
+           print(x, "odno sovpadenie"
+           mailResult.append(x)
+       elif result[x] == 2:
+           print(x, "dva sovpadenie")
+    print(mailResult)
+
+
+    #SMTP configuration
+    to = 'd@wi-fi-bar.com'
+    message = '<h1>\r\n'.join(mailResult)
+    subject = "ip in ACL: {}".format(oneACL)
+    msg = 'To: %s\r\nContent-Type: text/html; charset="utf-8"\r\nSubject: %s\r\n' % (to, subject)
+    msg += message
+    server = smtplib.SMTP('z.wi-fi-bar.com:25')
+    server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
         
 
 
