@@ -47,15 +47,9 @@ def matchIP():
                IParray.append(findIP.group(1))
            else:
                pass
-#           print("something wrong!")
         else:
               pass
-#       print("Found nothing", line)
-#    for x in IParray:
-#        print x
-#    print ("______________________________________________________________________________")
     return IParray
-
 
 #list of domain name
 domainlist = ['www.msftncsi.com', 'clients1.google.com', 'clients2.google.com', 'clients3.google.com', 'clients4.google.com', 'clients5.google.com','clients6.google.com', 'clients7.google.com','clients8.google.com', 'clients9.google.com', 'apple.com', 'itools.info', 'ibook.info', 'thinkdifferent.us', 'airport.us', 'appleiphonecheck.com']
@@ -68,20 +62,6 @@ def nslookup(domainlist):
     dictIP = {}
     for name in domainlist:
         dictIP[name] = filter(lambda x: bool(x), subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0].split("\n"))
-
-
-
-#        listIP.append(subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0])
-#    listIP = filter(lambda x: bool(x), listIP)  #check '' in listIP and delete this element
-#Some nslookups results return 2 or more ip adresses, so we need to split it and add to newList separatey
-#    newList = []
-#    for x in listIP:
-#        if x.split("\n"):
-#             for y in x.split("\n"):
-#                 newList.append(y)
-#        else:
-#            newlist.append(x)
-#    newList = filter(lambda x: bool(x), newList)
     return dictIP
 
 def createListfor(dictIP):
@@ -91,7 +71,6 @@ def createListfor(dictIP):
             listResult.append(dictIP[x])
         else:
             pass
-
     NewListResult = list()
     for x in listResult:
         NewListResult.extend(x)
@@ -116,16 +95,6 @@ def matchOctets(newListIP, IParray):
         matches_arr.update({ip1: max(matches)})
     return matches_arr
 
-#dictIP = nslookup(domainlist)
-#newListIP = createListfor(dictIP)
-#print(newListIP)
-#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
-#IParray = matchIP()
-#result = matchOctets(newListIP, IParray)
-#rint(result)
-
-
-
 def mailCreate(mailResult):
     result = dict()
     for site in dictIP:
@@ -134,11 +103,8 @@ def mailCreate(mailResult):
                 result[site] = x
             else:
                  pass
-#                print("zopa", dictIP[site])
     return result
 
-#mailMessage = mailCreate(mailResult)
-#print(mailMessage)
 
 """
 transfer ACL in Functions and send email
@@ -152,21 +118,20 @@ for oneACL in listACL:
     newListIP = createListfor(dictIP)
     IParray = matchIP()
     result = matchOctets(newListIP, IParray)
-#    mailMessage = mailCreate(mailResult)
     mailResult = []
     for x in result:
        if result[x] == 0:
            print(x, "NET sovpodeniy")         
            mailResult.append(x)
        elif result[x] == 1:
-           print(x, "odno sovpadenie")
-#           mailResult.append(x)
+            pass
        elif result[x] == 2:
-           print(x, "dva sovpadenie")
+            pass
+       else:
+            pass
     mailMessage = mailCreate(mailResult)
-    print(mailMessage)
     
-    if mailMessage != 0
+    if mailMessage != 0:
     #SMTP configuration
         to = 'd@wi-fi-bar.com'
 #    message = '<br> Нет совпадения с : '.join(str(mailMessage))
