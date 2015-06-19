@@ -36,7 +36,7 @@ def WLC(router_user, router_pass, router_ip, acl):
 look the file through and with help of rv  find ip address of network
 """
 
-def match():
+def matchIP():
     f = open('/var/www/html/javascriptCourse/MY_PEOJECT/new-project/mylog.txt')
     IParray = []  # list of  nets in ACL
     ipPattern = re.compile(r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(.*)')
@@ -65,29 +65,46 @@ get list of ip addresses with help of nslookup
 """
 
 def nslookup(domainlist):
-    listIP = []
+    dictIP = {}
     for name in domainlist:
-        listIP.append(subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0])
-    listIP = filter(lambda x: bool(x), listIP)  #check '' in listIP and delete this element
+        dictIP[name] = filter(lambda x: bool(x), subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0].split("\n"))
+
+
+
+#        listIP.append(subprocess.Popen("nslookup %s | grep 'Address: ' | sed 's/Address: //g'" % name, shell=True, stdout=subprocess.PIPE).communicate()[0])
+#    listIP = filter(lambda x: bool(x), listIP)  #check '' in listIP and delete this element
 #Some nslookups results return 2 or more ip adresses, so we need to split it and add to newList separatey
-    newList = []
-    for x in listIP:
-        if x.split("\n"):
-             for y in x.split("\n"):
-                 newList.append(y)
+#    newList = []
+#    for x in listIP:
+#        if x.split("\n"):
+#             for y in x.split("\n"):
+#                 newList.append(y)
+#        else:
+#            newlist.append(x)
+#    newList = filter(lambda x: bool(x), newList)
+    return dictIP
+
+def createListfor(dictIP):
+    listResult = []
+    for x in dictIP:
+        if bool(dictIP[x]):
+            listResult.append(dictIP[x])
         else:
-            newlist.append(x)
-    newList = filter(lambda x: bool(x), newList)
-    return newList 
+            pass
+
+    NewListResult = list()
+    for x in listResult:
+        NewListResult.extend(x)
+    return NewListResult
 
 
 """
 find matches - ip octets
 """
 
-def matchOctets(newList, IParray):
+def matchOctets(newListIP, IParray):
     matches_arr = dict()
-    for ip1 in newList:
+    for ip1 in newListIP:
         matches = list()
         for ip2 in IParray:
             match = 0
@@ -99,6 +116,29 @@ def matchOctets(newList, IParray):
         matches_arr.update({ip1: max(matches)})
     return matches_arr
 
+#dictIP = nslookup(domainlist)
+#newListIP = createListfor(dictIP)
+#print(newListIP)
+#WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', 'inet3' )
+#IParray = matchIP()
+#result = matchOctets(newListIP, IParray)
+#rint(result)
+
+
+
+def mailCreate(mailResult):
+    result = dict()
+    for site in dictIP:
+        for x in mailResult:
+            if x in dictIP[site]:
+                result[site] = x
+            else:
+                 pass
+#                print("zopa", dictIP[site])
+    return result
+
+#mailMessage = mailCreate(mailResult)
+#print(mailMessage)
 
 """
 transfer ACL in Functions and send email
@@ -108,27 +148,42 @@ listACL = ['inet5', 'inet3']
 
 for oneACL in listACL:
     WLC('mr.pity', 'Neistrebim1201', '10.1.19.10', oneACL )
-    IParray = match()
-    newList = nslookup(domainlist)
-    result = matchOctets(newList, IParray)
-
+    dictIP = nslookup(domainlist)
+    newListIP = createListfor(dictIP)
+    IParray = matchIP()
+    result = matchOctets(newListIP, IParray)
+#    mailMessage = mailCreate(mailResult)
     mailResult = []
     for x in result:
-       if result[x] == 1:
-           print(x, "odno sovpadenie"
+       if result[x] == 0:
+           print(x, "NET sovpodeniy")         
            mailResult.append(x)
+       elif result[x] == 1:
+           print(x, "odno sovpadenie")
+#           mailResult.append(x)
        elif result[x] == 2:
            print(x, "dva sovpadenie")
-    print(mailResult)
-
-
+    mailMessage = mailCreate(mailResult)
+    print(mailMessage)
+    
+    if mailMessage != 0
     #SMTP configuration
-    to = 'd@wi-fi-bar.com'
-    message = '<h1>\r\n'.join(mailResult)
-    subject = "ip in ACL: {}".format(oneACL)
-    msg = 'To: %s\r\nContent-Type: text/html; charset="utf-8"\r\nSubject: %s\r\n' % (to, subject)
-    msg += message
-    server = smtplib.SMTP('z.wi-fi-bar.com:25')
-    server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
+        to = 'd@wi-fi-bar.com'
+#    message = '<br> Нет совпадения с : '.join(str(mailMessage))
+        message = '<br> Нет совпадения с : '.join([''] + map(str, mailMessage.iteritems()))
+        subject = "ip in ACL: {}".format(oneACL)
+        msg = 'To: %s\r\nContent-Type: text/html; charset="utf-8"\r\nSubject: %s\r\n' % (to, subject)
+        msg += message
+        server = smtplib.SMTP('z.wi-fi-bar.com:25')
+        server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
+    else:
+        to = 'd@wi-fi-bar.com'
+#    message = '<br> Нет совпадения с : '.join(str(mailMessage))
+        message = 'Аксесс листы сопадают!'
+        subject = "ip in ACL: {}".format(oneACL)
+        msg = 'To: %s\r\nContent-Type: text/html; charset="utf-8"\r\nSubject: %s\r\n' % (to, subject)
+        msg += message
+        server = smtplib.SMTP('z.wi-fi-bar.com:25')
+        server.sendmail('zabbix-report@wi-fi-bar.com', to , msg)
         
 
