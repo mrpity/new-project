@@ -95,6 +95,10 @@ def matchOctets(newListIP, IParray):
         matches_arr.update({ip1: max(matches)})
     return matches_arr
 
+"""
+find mathes sites for IPs
+"""
+
 def mailCreate(mailResult):
     result = dict()
     for site in dictIP:
@@ -121,17 +125,18 @@ for oneACL in listACL:
     mailResult = []
     for x in result:
        if result[x] == 0:
-           print(x, "NET sovpodeniy")         
-           mailResult.append(x)
+#           mailResult.append(x)
+           pass
        elif result[x] == 1:
-            pass
+           mailResult.append(x)
+           pass
        elif result[x] == 2:
-            pass
+           pass
        else:
-            pass
+           pass
     mailMessage = mailCreate(mailResult)
     
-    if mailMessage != 0:
+    if  mailMessage:
     #SMTP configuration
         to = 'd@wi-fi-bar.com'
 #    message = '<br> Нет совпадения с : '.join(str(mailMessage))
