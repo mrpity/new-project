@@ -1,0 +1,7 @@
+---
+- hosts: experiments
+#  user: dkhodakivsky
+  tasks:
+    - name: Copy file
+      template: src=/home/dkhodakivsky/.bashrc dest=/tmp/ owner=dkhodakivsky mode=777
+      sudo: yes
