@@ -1,0 +1,6 @@
+---
+
+#debug mode
+  - name: Debug
+    debug: msg={{ ansible_distribution }}
+
