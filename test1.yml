@@ -5,3 +5,6 @@
     - name: Copy file
       template: src=/home/parasha.txt dest=/tmp/ owner=dkhodakivsky mode=777
       sudo: yes
+    - name: Debug
+      debug: msg={{ ansible_distribution }}
+
