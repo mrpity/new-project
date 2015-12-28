@@ -1,0 +1,212 @@
+---
+- hosts: experiments
+  tasks:
+   - name: Debug
+     debug: msg={{ ansible_distribution }} - {{ ansible_distribution_release }}
+
+   - name: Moving old sourcelist
+     shell: mv /etc/apt/sources.list /etc/apt.sources.list.orig
+
+   - name: Creating new repository file for Debian_Wheezy
+     shell: echo {{item}} >> /etc/apt/sources.list
+     with_items:
+         - "'#' Debian Stable '('Wheezy')' repo"
+         - "deb http://http.debian.net/debian/ wheezy main contrib non-free"
+         - "deb-src http://http.debian.net/debian/ wheezy main contrib non-free"
+         - ""
+         - "deb http://security.debian.org/ wheezy/updates main contrib non-free"
+         - "deb-src http://security.debian.org/ wheezy/updates main contrib non-free"
+         - ""
+         - "deb http://http.debian.net/debian/ wheezy-updates main contrib non-free"
+         - "deb-src http://http.debian.net/debian/ wheezy-updates main contrib non-free"
+         - ""
+         - "deb http://http.debian.net/debian/ wheezy-backports main contrib non-free"
+         - "deb-src http://http.debian.net/debian/ wheezy-backports main contrib non-free"
+     when: "ansible_distribution == 'Debian' and ansible_distribution_release == 'wheezy'"
+   - name: Creating new repository file for Debian_Jessie
+     shell: echo {{item}} >> /etc/apt/sources.list
+     with_items:
+         - "'#' Debian Stable '('Jessie')' repo"
+         - "deb http://http.debian.net/debian/ jessie main contrib non-free"
+         - "deb-src http://http.debian.net/debian/ jessie main contrib non-free"
+         - ""
+         - "deb http://security.debian.org/ jessie/updates main contrib non-free"
+         - "deb-src http://security.debian.org/ jessie/updates main contrib non-free"
+         - ""
+         - "deb http://http.debian.net/debian/ jessie-updates main contrib non-free"
+         - "deb-src http://http.debian.net/debian/ jessie-updates main contrib non-free"
+         - ""
+         - "deb http://http.debian.net/debian/ jessie-backports main contrib non-free"
+         - "deb-src http://http.debian.net/debian/ jessie-backports main contrib non-free"
+     when: "ansible_distribution == 'Debian' and ansible_distribution_release == 'jessie'"
+
+   - name: Server updating
+     apt: update_cache=yes
+   
+   - name: Installing useful software packages
+     apt: name={{item}} state=present
+     with_items: 
+         - curl
+         - tmux 
+#         - firmware-linux 
+#         - firmware-linux-free 
+#         - firmware-linux-nonfree 
+#         - intel-microcode
+#         - amd64-microcode 
+#         - build-essential 
+#         - tcpdump 
+#         - strace 
+#         - sudo 
+#         - nmap 
+#         - mc 
+#         - vim 
+#         - sudo 
+#         - iptraf 
+#         - iftop
+#         - iotop
+#         - htop 
+#         - dos2unix 
+#         - expect
+#         - mdadm 
+#         - ntp 
+#         - linux-headers-amd64
+#         - linux-source 
+#         - sysv-rc-conf 
+#         - lynx links
+#         - curl
+
+
+   - name: Creating NTP configuration file
+     template: src=templates/ntp.cnf.j2 dest=/etc/ntp.conf owner=root group=root mode=0644
+
+   - name: Creating Limits configuration file
+     template: src=templates/limits.cnf.j2 dest=/etc/security/limits.conf owner=root group=root mode=0644
+
+   - name: Cteating needed folders
+     shell: mkdir -p {{item}}
+     with_items: 
+          - "/media/data/var"
+          - "/media/data/usr/local"
+
+   - name: Moving potentially growing folders to the extendable volume
+     shell: sudo {{item}}
+     with_items: 
+          - "mv /opt /media/data/ && ln -s /media/data/opt /opt"
+          - "mv /home /media/data/ && ln -s /media/data/home /home"
+          - "mv /tmp /media/data/ && ln -s /media/data/tmp /tmp"
+          - "mv /var/log /media/data/var/ && ln -s /media/data/var/log /var/log"
+          - "mv /var/cache /media/data/var/ && ln -s /media/data/var/cache /var/cache"
+          - "mv /usr/local/src /media/data/usr/local/ && ln -s /media/data/usr/local/src /usr/local/src"
+
+   - name: Creating groups for users
+     group: name=Jessie state=present
+
+   - name: Creating users
+     user: name=Jessie shell=/bin/bash home=/home/Jessie group=Jessie groups=Jessie,sudo password="AQ!SW@de3?"
+
+
+
+   - name: Adding repo Java7
+     shell: echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" > /etc/apt/sources.list.d/java.list
+     tags:
+          - Java
+
+   - name: Adding apt-key for Java7
+     apt_key: keyserver=keyserver.ubuntu.com id=EEA14886
+     tags:
+          - Java
+
+   - name: Autoaccept license for Java7
+     shell: echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+     tags:
+          - Java
+
+   - name: Installing Java7
+     apt: name=oracle-java7-installer state=latest install_recommends=yes  update_cache=yes
+     tags:
+          - Java
+
+
+   - name: Installing Java8
+     apt: name=oracle-java8-installer state=latest install_recommends=yes  update_cache=yes
+     tags:
+          - Java
+
+   - name: Setting default java version
+     alternatives: name=java path=/usr/lib/jvm/java-8-oracle/jre/bin/java
+     tags:
+          - Java
+
+#   - name: Setting default Java
+#     apt: name="oracle-java8-set-default"  state=latest
+#     tags: 
+#          - Java
+
+
+   - name: Finding out the latest version of NginX
+     shell: apt-cache show nginx | grep Version | grep -v 1.2 | awk {'print $2'}
+     register: NVER
+     tags:
+          - nginx
+
+   - name: Installing nginx-common for NginX
+     apt: name=nginx-common={{ NVER.stdout }} 
+     tags:
+          - nginx
+
+   - name: Installing nginx-full for NginX
+     apt: name=nginx-full={{ NVER.stdout }} 
+     tags:
+          - nginx
+
+   - name: Installing -NginX-
+     apt: name=nginx={{ NVER.stdout }} 
+     tags:
+          - nginx
+
+   - name: Changing worker_processes for Nginx
+     shell: sed -i "s/worker_processes 4/worker_processes $(lscpu | grep "CPU(s):" | grep -vE "^N" | awk {'print $2'})/g" /etc/nginx/nginx.conf
+     sudo: yes
+     tags:
+          - nginx
+
+   - name: Basic worker_connections for Nginx
+     shell: sed -i "s/worker_connections 768/worker_connections 1024/g" /etc/nginx/nginx.conf
+     sudo: yes
+     tags:
+          - nginx
+
+   - name: Removing defaul configs for Nginx
+     shell: rm {{ item }}
+     with_items:
+          - "/etc/nginx/sites-available/default"
+          - "/etc/nginx/sites-enabled/default"
+     ignore_errors: yes
+     tags:
+          - nginx
+
+   - name: Restart Nginx
+     service: name=nginx state=restarted
+     tags:
+          - nginx
+ 
+   - name: Add Whirl repository
+     shell: echo deb http://deb-generic.whirl.sg/ tmp main > /etc/apt/sources.list.d/whirl.list
+     tags:
+          - whirl
+
+   - name: Add key for whirl repository
+     shell: wget -qO - http://deb-generic.whirl.sg/whirl.gpg.key | apt-key add -
+     tags: 
+         - whirl
+
+   - name: Server updating
+     apt: update_cache=yes
+     tags: 
+         - whirl
+     
+#   - name: Show output  
+#     debug: msg={{ NVER.stdout }}
+#     tags:
+#          - nginx
+
